@@ -5,6 +5,10 @@ on:
     tags:
       - '*'  # Trigger the workflow on push of any tag
 
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
@@ -41,9 +45,19 @@ jobs:
           config: "nfpm.yaml"
           packager: "archlinux"
 
-      - name: Create Release
+      - name: Check if Release Exists
+        id: check_release
+        run: |
+          if gh release view ${{ github.ref }} >/dev/null 2>&1; then
+            echo "release_exists=true" >> $GITHUB_ENV
+          else
+            echo "release_exists=false" >> $GITHUB_ENV
+          fi
+
+      - name: Create or Update Release
+        if: env.release_exists == 'false'
         id: create_release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
