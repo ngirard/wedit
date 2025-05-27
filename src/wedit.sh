@@ -9,7 +9,7 @@
 # ——————————
 # Unofficial bash strict mode
 set -euo pipefail
-shopt -s errtrace # Ensure ERR trap is inherited by functions, command substitutions, and subshells
+set -o errtrace # Ensure ERR trap is inherited by functions, command substitutions, and subshells
 
 # ——————————
 # Globals and constants
