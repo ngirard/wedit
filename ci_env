@@ -1,0 +1,9 @@
+BUILD_DIR="build"
+DESCRIPTION="A utility to reliably open files in a preferred editor, waiting for completion."
+HOMEPAGE='https://github.com/ngirard/wedit'
+LICENSE='MIT'
+MAINTAINER='Nicolas Girard <girard.nicolas@gmail.com>'
+PACKAGE_NAME='wedit'
+PREFIX=/usr/local
+PROGRAM_NAME='wedit'
+VENDOR='Nicolas Girard'

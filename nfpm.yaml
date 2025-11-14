@@ -1,13 +1,13 @@
-name: wedit
+name: ${PACKAGE_NAME}
 arch: amd64
 platform: linux
 section: default
 priority: extra
-maintainer:  Nicolas Girard <girard.nicolas@gmail.com>
-description: "A utility to reliably open files in a preferred editor, waiting for completion"
-vendor: "Nicolas Girard"
-homepage: "https://github.com/ngirard/wedit"
-license: MIT
+maintainer:  "${MAINTAINER}"
+description: "${DESCRIPTION}"
+vendor: "${VENDOR}"
+homepage: "${HOMEPAGE}"
+license: "${LICENSE}"
 disable_globbing: false
 
 # Version
@@ -16,8 +16,9 @@ version_schema: semver
 
 # Contents to add to the package
 contents:
-  - src: src/wedit.sh
-    dst: /usr/local/bin/wedit
+  - src: "${BUILD_DIR}/${PROGRAM_NAME}.sh"
+    dst: "${PREFIX}/bin/${PROGRAM_NAME}"
+    expand: true
 
 # Umask to be used on files without explicit mode set.
 umask: 0o002

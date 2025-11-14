@@ -1,6 +1,6 @@
 # Release Process
 
-This document describes the release process for wedit.
+This document describes the release process for this project.
 
 ## Prerequisites
 
