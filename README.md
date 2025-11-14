@@ -1,4 +1,4 @@
-# wedit 🧙‍♂️
+# wedit
 
 [![GitHub version](https://img.shields.io/github/v/tag/ngirard/wedit?label=version&sort=semver&color=blue)](https://github.com/ngirard/wedit/releases)
 [![License](https://img.shields.io/github/license/ngirard/wedit?color=green)](LICENSE)
@@ -9,7 +9,7 @@
 
 It intelligently honors `$VISUAL` and `$EDITOR`, automatically applies the correct "wait" flags for various editors, provides sane defaults, offers interactive configuration, and gracefully falls back to available alternatives.
 
-## The Problem `wedit` Solves
+## The problem `wedit` solves
 
 Developers often need a consistent way to open files from scripts (e.g., Git hooks, CLI tools) and have the script pause until the editor is closed. Existing solutions can be inconsistent:
 * Custom wrappers might only support a few editors.
@@ -18,11 +18,11 @@ Developers often need a consistent way to open files from scripts (e.g., Git hoo
 
 `wedit` aims to be a single, robust, and user-friendly solution for this common task.
 
-## Key Features ✨
+## Key features
 
-* **Environment Variable Aware:** Honors `$VISUAL` and `$EDITOR` environment variables.
-* **Automatic Wait Flags:** Intelligently detects and applies the correct "wait" flags for popular GUI editors (e.g., `code --wait`, `subl --wait`, `gedit --wait`, `kate --block`).
-* **Smart Fallback Hierarchy:**
+* **Environment variable aware:** Honors `$VISUAL` and `$EDITOR` environment variables.
+* **Automatic wait flags:** Intelligently detects and applies the correct "wait" flags for popular GUI editors (e.g., `code --wait`, `subl --wait`, `gedit --wait`, `kate --block`).
+* **Smart fallback hierarchy:**
     1. `$VISUAL`
     2. `$EDITOR`
     3. User configuration (`~/.weditrc`)
@@ -30,13 +30,13 @@ Developers often need a consistent way to open files from scripts (e.g., Git hoo
     5. First available editor from a built-in list
     6. Interactive prompt (on first run or if no editor is found)
     7. Fallback to `vi` or `nano` if available.
-* **Interactive Configuration:** Run `wedit -c` to choose and save your preferred editor from a list of detected ones.
-* **Recursion Safe:** Prevents accidental infinite loops if `wedit` itself is set as `$EDITOR`.
-* **Lightweight & Portable:** A single Bash script designed to work on Linux and macOS with minimal dependencies.
-* **Editor Discovery:** Can list detected editors with `wedit -l`.
-* **Flexible Control:** Options to force or disable wait behavior (`-w`, `-n`).
+* **Interactive configuration:** Run `wedit -c` to choose and save your preferred editor from a list of detected ones.
+* **Recursion safe:** Prevents accidental infinite loops if `wedit` itself is set as `$EDITOR`.
+* **Lightweight & portable:** A single Bash script designed to work on Linux and macOS with minimal dependencies.
+* **Editor discovery:** Can list detected editors with `wedit -l`.
+* **Flexible control:** Options to force or disable wait behavior (`-w`, `-n`).
 
-## Supported Editors
+## Supported editors
 
 `wedit` has built-in support for detecting and managing wait flags for the following editors:
 
@@ -55,9 +55,9 @@ Developers often need a consistent way to open files from scripts (e.g., Git hoo
 
 *Terminal-based editors (like Vim, Nano, Vi) naturally block the calling process, so no explicit wait flags are needed for them unless overridden.*
 
-## Installation 🚀
+## Installation
 
-### 1. From Releases (Recommended)
+### 1. From releases (recommended)
 
 You can download the `wedit` script or pre-built packages (if available) from the [GitHub Releases page](https://github.com/ngirard/wedit/releases).
 
@@ -78,7 +78,7 @@ You can download the `wedit` script or pre-built packages (if available) from th
     ```
     (The `nfpm.yaml` suggests packages might be generated, installing to `/usr/local/bin/wedit`.)
 
-### 2. Manual Installation (from source)
+### 2. Manual installation (from source)
 
 Clone the repository or download `src/wedit.sh`:
 ```bash
@@ -88,14 +88,14 @@ sudo cp src/wedit.sh /usr/local/bin/wedit
 sudo chmod +x /usr/local/bin/wedit
 ```
 
-## Usage ⌨️
+## Usage
 
 ```
 wedit [options] [--] <file> [<file>...]
 wedit [options]
 ```
 
-**Common Operations:**
+**Common operations:**
 
 * **Edit a file:**
     ```bash
@@ -130,30 +130,30 @@ wedit [options]
 * `-w, --wait`: Force waiting behavior. This is default for GUI editors with wait flags and all TTY editors. Primarily ensures GUI wait flags are used.
 * `--`: Signals the end of options; all subsequent arguments are treated as file names.
 
-**Example Use Case (Git commit hook):**
+**Example use case (Git commit hook):**
 Set `wedit` as your Git editor to ensure Git waits for your message:
 ```bash
 git config --global core.editor "wedit"
 ```
 
-## Configuration ⚙️
+## Configuration
 
 `wedit` determines which editor to use based on the following hierarchy:
 
-1. **`$VISUAL` Environment Variable:** If set, its value is used.
-2. **`$EDITOR` Environment Variable:** If `$VISUAL` is not set and `$EDITOR` is, its value is used.
-3. **User Configuration File:**
+1. **`$VISUAL` environment variable:** If set, its value is used.
+2. **`$EDITOR` environment variable:** If `$VISUAL` is not set and `$EDITOR` is, its value is used.
+3. **User configuration file:**
     * `~/.weditrc` (Primary)
     * `~/.selected_editor` (Fallback for reading, compatible with Debian's `select-editor`)
     The file should contain a line like: `SELECTED_EDITOR="your-editor-command --optional-args"`
     You can create/manage this file using `wedit -c`.
-4. **System 'editor' Alternative:** On Linux systems using `update-alternatives`, `wedit` will try to use the system-configured `editor`.
-5. **Built-in List of Known Editors:** `wedit` scans for known editors in your `$PATH` (see [Supported Editors](#supported-editors)).
-6. **Interactive Prompt:** If no editor is found through the above methods and no configuration exists, `wedit` will prompt you to select an editor. This choice is then saved to `~/.weditrc` for future use.
-7. **Final Fallback:** If all else fails, `wedit` will attempt to use `vi` or `nano` if they are available.
+4. **System 'editor' alternative:** On Linux systems using `update-alternatives`, `wedit` will try to use the system-configured `editor`.
+5. **Built-in list of known editors:** `wedit` scans for known editors in your `$PATH` (see [Supported Editors](#supported-editors)).
+6. **Interactive prompt:** If no editor is found through the above methods and no configuration exists, `wedit` will prompt you to select an editor. This choice is then saved to `~/.weditrc` for future use.
+7. **Final fallback:** If all else fails, `wedit` will attempt to use `vi` or `nano` if they are available.
 8. **Error:** If no editor can be found, `wedit` will exit with an error.
 
-## Development 🛠️
+## Development
 
 This project uses `just` (a command runner) for common development tasks. See the `justfile`.
 
@@ -168,7 +168,7 @@ This project uses `just` (a command runner) for common development tasks. See th
 * `just test-one <name>`: Run a specific test file `./tests/test_<name>.sh`.
 * `just release`: (For maintainers) Executes the release script.
 
-## Contributing 🤝
+## Contributing
 
 Contributions are welcome! Whether it's bug reports, feature suggestions, or pull requests:
 
@@ -181,7 +181,7 @@ Contributions are welcome! Whether it's bug reports, feature suggestions, or pul
     * Commit your changes with clear messages.
     * Push to your fork and submit a pull request.
 
-## License 📄
+## License
 
 This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
 
