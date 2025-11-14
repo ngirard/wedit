@@ -9,13 +9,18 @@ permissions:
   contents: write
   packages: write
 
+env:
+  PROJECT_NAME: wedit
+  NFPM_VERSION: "2.40.0"
+  NFPM_CONFIG: "nfpm.yaml"
+
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@main
+        uses: actions/checkout@v4
 
       - name: Extract Version
         id: extract_version
@@ -25,73 +30,37 @@ jobs:
         uses: burningalchemist/nfpm-action@v1
         id: deb-package
         with:
-          nfpm_version: "2.40.0"
-          config: "nfpm.yaml"
+          nfpm_version: ${{ env.NFPM_VERSION }}
+          config: ${{ env.NFPM_CONFIG }}
           packager: "deb"
 
       - name: Create RPM package
         uses: burningalchemist/nfpm-action@v1
         id: rpm-package
         with:
-          nfpm_version: "2.40.0"
-          config: "nfpm.yaml"
+          nfpm_version: ${{ env.NFPM_VERSION }}
+          config: ${{ env.NFPM_CONFIG }}
           packager: "rpm"
 
-      - name: Create RPM package
+      - name: Create Archlinux package
         uses: burningalchemist/nfpm-action@v1
         id: archlinux-package
         with:
-          nfpm_version: "2.40.0"
-          config: "nfpm.yaml"
+          nfpm_version: ${{ env.NFPM_VERSION }}
+          config: ${{ env.NFPM_CONFIG }}
           packager: "archlinux"
 
-      - name: Check if Release Exists
-        id: check_release
-        run: |
-          if gh release view ${{ github.ref }} >/dev/null 2>&1; then
-            echo "release_exists=true" >> $GITHUB_ENV
-          else
-            echo "release_exists=false" >> $GITHUB_ENV
-          fi
-
       - name: Create or Update Release
-        if: env.release_exists == 'false'
-        id: create_release
         uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: Release ${{ github.ref }}
-          tag_name: ${{ github.ref }}
+          name: Release ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
           draft: false
           prerelease: false
-
-      - name: Upload DEB package to release
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ steps.deb-package.outputs.package }}
-          asset_name: wedit_${{ env.VERSION }}_amd64.deb
-          asset_content_type: application/vnd.debian.binary-package
-
-      - name: Upload RPM package to release
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ steps.rpm-package.outputs.package }}
-          asset_name: wedit_${{ env.VERSION }}_amd64.rpm
-          asset_content_type: application/x-rpm
-
-      - name: Upload Archlinux package to release
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ steps.archlinux-package.outputs.package }}
-          asset_name: wedit_${{ env.VERSION }}_amd64.pkg.tar.zst
-          asset_content_type: application/zstd
+          files: |
+            ${{ steps.deb-package.outputs.package }}
+            ${{ steps.rpm-package.outputs.package }}
+            ${{ steps.archlinux-package.outputs.package }}
+          fail_on_unmatched_files: true

@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
+# --- Configuration ---
+PROGRAM="${0##*/}"
+VERSION_FILE="version"
+DRY_RUN="${DRY_RUN:-0}"
+
 # --- Logging Functions ---
 
 # Logs messages with various severity levels to either the console or syslog, depending on configuration.
@@ -84,47 +91,92 @@ export -f log log_to_syslog log_to_console _log_exception fatal
 
 # --- End of Logging Functions ---
 
-#!/usr/bin/env bash
+# --- Release Functions ---
 
 # Check if only the version file has been modified
-if ! git diff --name-only --cached | grep -q "^version$"; then
-    if [[ $(git diff --name-only) != "version" ]]; then
-        fatal "The only allowed change for the release is the version file.\n"
+check_version_file_only() {
+    if ! git diff --name-only --cached | grep -q "^${VERSION_FILE}$"; then
+        if [[ $(git diff --name-only) != "${VERSION_FILE}" ]]; then
+            fatal "The only allowed change for the release is the ${VERSION_FILE} file."
+        fi
     fi
-fi
+}
 
-# Check if the version file exists and is not empty
-if [[ ! -f version ]]; then
-    fatal "Version file not found!\n"
-fi
+# Read and validate version
+get_version() {
+    if [[ ! -f "${VERSION_FILE}" ]]; then
+        fatal "Version file '${VERSION_FILE}' not found!"
+    fi
 
-version="$(cat version)"
-if [[ -z "$version" ]]; then
-    fatal "Version is empty!\n"
-fi
+    local version
+    version="$(cat "${VERSION_FILE}")"
+    
+    if [[ -z "$version" ]]; then
+        fatal "Version is empty in '${VERSION_FILE}'!"
+    fi
+    
+    echo "${version}"
+}
 
-# Check if the tag already exists
-if git rev-parse "v${version}" >/dev/null 2>&1; then
-    fatal "Tag v${version} already exists. Please bump the version.\n"
-fi
+# Check if tag already exists
+check_tag_exists() {
+    local version="$1"
+    if git rev-parse "v${version}" >/dev/null 2>&1; then
+        fatal "Tag v${version} already exists. Please bump the version."
+    fi
+}
 
-# Commit, tag, and push
-# Add the version file to the commit
-git add version
-if ! git commit -m "Release ${version}."; then
-    fatal "Git commit failed.\n"
-fi
+# Execute git command with dry-run support
+git_exec() {
+    if [[ "${DRY_RUN}" -eq 1 ]]; then
+        log "info" "[DRY-RUN] Would execute: git $*"
+        return 0
+    else
+        git "$@"
+    fi
+}
 
-if ! git tag "v${version}"; then
-    fatal "Tagging failed.\n"
-fi
+# --- Main Release Process ---
 
-if ! git push; then
-    fatal "Git push failed.\n"
-fi
+main() {
+    log "info" "Starting release process..."
+    
+    if [[ "${DRY_RUN}" -eq 1 ]]; then
+        log "warn" "Running in DRY-RUN mode - no changes will be made"
+    fi
+    
+    # Validate changes
+    check_version_file_only
+    
+    # Get and validate version
+    version=$(get_version)
+    log "info" "Version: ${version}"
+    
+    # Check if tag exists
+    check_tag_exists "${version}"
+    
+    # Commit, tag, and push
+    git_exec add "${VERSION_FILE}"
+    
+    if ! git_exec commit -m "Release ${version}"; then
+        fatal "Git commit failed."
+    fi
+    
+    if ! git_exec tag "v${version}"; then
+        fatal "Tagging failed."
+    fi
+    
+    if ! git_exec push; then
+        fatal "Git push failed."
+    fi
+    
+    if ! git_exec push --tags; then
+        fatal "Git push tags failed."
+    fi
+    
+    log "info" "Release ${version} completed successfully."
+}
 
-if ! git push --tags; then
-    fatal "Git push tags failed.\n"
-fi
+# --- Script Entry Point ---
 
-log "info" "Release ${version} completed successfully.\n"
+main "$@"
