@@ -49,7 +49,7 @@ _ensure_nfpm: _ensure_eget
     printf "Installing Nfpm...\n"
     
     # Use eget to install directly to PREFIX
-    eget --to="{{PREFIX}}/bin" goreleaser/nfpm
+    eget --to="{{PREFIX}}/bin" -a ^sbom goreleaser/nfpm
     
     # Make executable (sudo not needed as eget creates it executable)
     if [[ -z "${CI}" ]] && [[ "{{PREFIX}}" == "/usr/local" ]]; then
