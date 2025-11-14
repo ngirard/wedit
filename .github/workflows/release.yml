@@ -10,7 +10,6 @@ permissions:
   packages: write
 
 env:
-  PROJECT_NAME: wedit
   NFPM_VERSION: "2.43.4"
   NFPM_CONFIG: "nfpm.yaml"
 
@@ -22,9 +21,16 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Extract Version
-        id: extract_version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+      - name: Install yq
+        run: |
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+
+      - name: Extract Project Name and Version
+        id: extract_metadata
+        run: |
+          echo "PROJECT_NAME=$(yq eval '.name' ${{ env.NFPM_CONFIG }})" >> $GITHUB_ENV
+          echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
 
       - name: Create DEB package
         uses: burningalchemist/nfpm-action@v1
@@ -55,7 +61,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: Release ${{ github.ref_name }}
+          name: ${{ env.PROJECT_NAME }} ${{ github.ref_name }}
           tag_name: ${{ github.ref_name }}
           draft: false
           prerelease: false
