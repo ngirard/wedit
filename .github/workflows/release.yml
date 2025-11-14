@@ -19,6 +19,11 @@ jobs:
       - name: Setup just
         uses: extractions/setup-just@v2
 
+      - name: Load shared environment
+        run: |
+          source ci_env
+          echo "BUILD_DIR=$BUILD_DIR" >> "$GITHUB_ENV"
+
       - name: Validate version matches tag
         run: |
           VERSION=$(cat version)
